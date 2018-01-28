@@ -54,7 +54,7 @@ const cors = require("cors");
 const superuserKeys = ['8B4229E8CB1A34D2684915DE6DCFA', 'AB3BF59F6FE36C4185EFB3EA6A7EA'];
 const clientKeys = ['133D35B86D62EACF4B383A2A7C1F2', 'B3134A1F29AE39764D6CF3BDBADBA'];
 
-const port = 3000;
+var port = process.env.PORT || 8080;
 const schemaVersionNumber = 0;
 const app = express();
 const schemas = [UserSchema, FriendRequestSchema, RequestTypeSchema];
