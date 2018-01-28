@@ -18,7 +18,6 @@ const UserSchema = {
         sentRequests: 'FriendRequests[]'
     }
 };
-
 const FriendRequestSchema = {
     name: 'FriendRequests',
     primaryKey: 'id',
@@ -30,7 +29,6 @@ const FriendRequestSchema = {
         typeId: { type: 'int', indexed: true }
     }
 };
-
 const RequestTypeSchema = {
     name: 'RequestTypes',
     primaryKey: 'id',
@@ -54,12 +52,11 @@ const cors = require("cors");
  * API Keys for admin/client
  */
 const superuserKeys = ['8B4229E8CB1A34D2684915DE6DCFA', 'AB3BF59F6FE36C4185EFB3EA6A7EA'];
-const clientKeys = ['133D35B86D62EACF4B383A2A7C1F2', 'B3134A1F29AE39764D6CF3BDBADBA']
+const clientKeys = ['133D35B86D62EACF4B383A2A7C1F2', 'B3134A1F29AE39764D6CF3BDBADBA'];
 
 const port = 3000;
 const schemaVersionNumber = 0;
 const app = express();
-
 const schemas = [UserSchema, FriendRequestSchema, RequestTypeSchema];
 
 /**
@@ -77,7 +74,7 @@ const realm = new Realm({
 });
 
 app.use(bodyParser.urlencoded({extended: false}));
-app.use(logger("dev"));
+// app.use(logger("dev"));
 app.use(cors());
 
 /**
@@ -153,7 +150,7 @@ app.post("/addRequestType", function (req, res) {
  */
 
 /**
- * @api {post} /signUpUser Check user credentials
+ * @api {post} /signUpUser Sign Up user
  * @apiName signUpUser
  * @apiGroup Client
  * @apiVersion 0.0.1
@@ -238,7 +235,7 @@ app.post("/signUpUser", function (req, res) {
 });
 
 /**
- * @api {post} /signInUser Check user credentials
+ * @api {post} /signInUser Sign In user
  * @apiName signInUser
  * @apiGroup Client
  * @apiVersion 0.0.1
@@ -262,6 +259,7 @@ app.post("/signUpUser", function (req, res) {
  *        "status": "Success",
  *        "message": "User credentials valid",
  *        "body": {
+ *              userName: "sami",
  *              name: "Abdul Sami",
  *              age: 21
  *        }
@@ -297,6 +295,7 @@ app.post("/signInUser", function (req, res) {
             status: statusSuccess,
             message: "User credentials valid",
             body: {
+                userName: user.userName,
                 name: user.name,
                 age: user.age,
                 receivedRequests: user.receivedRequests.map(mapNumberList)
@@ -470,7 +469,7 @@ app.post("/getMotionFriends", function (req, res) {
 });
 
 /**
- * @api {post} /getFriendRequests Get all friend receivedRequests of a user
+ * @api {post} /getFriendRequests Get all friend requests of a user
  * @apiName getFriendRequests
  * @apiGroup Client
  * @apiVersion 0.0.1
@@ -496,21 +495,18 @@ app.post("/getMotionFriends", function (req, res) {
  *              {
  *                  id: "REQ-sdfdfd-zvdgdg-arereggdd",
  *                  fromUser: "sami",
- *                  toUser: "maaz",
  *                  date: 1345674343,
  *                  typeId: 0
  *              },
  *              {
  *                  id: "REQ-sdfdfd-zvdgdg-arereggdd",
  *                  fromUser: "sami",
- *                  toUser: "maaz",
  *                  date: 1345674343,
  *                  typeId: 1
  *              },
  *              {
  *                  id: "REQ-sdfdfd-zvdgdg-arereggdd",
  *                  fromUser: "sami",
- *                  toUser: "maaz",
  *                  date: 1345674343,
  *                  typeId: 0
  *              }
@@ -541,12 +537,11 @@ app.post("/getFriendRequests", function (req, res) {
     res.json(
         {
             status: statusSuccess,
-            message: "User credentials valid",
+            message: "Friend requests fetched",
             body: requests.map(function (item) {
                 return {
                     id: item.id,
                     fromUser: item.fromUser,
-                    toUser: item.toUser,
                     date: item.date,
                     typeId: item.typeId,
                 }
@@ -705,7 +700,6 @@ app.post("/updateMotionStatus", function (req, res) {
  *
  * @apiSuccess {String} status Success/Error.
  * @apiSuccess {String} message Response message.
- * @apiSuccess {Object[]} body Response Object[].
  *
  * @apiErrorExample {json} Error-Response:
  *     {
@@ -780,11 +774,10 @@ app.post("/sendFriendRequest", function (req, res) {
  * @apiVersion 0.0.1
  *
  * @apiParam {String} apiKey Key for API authentication.
- * @apiParam {String} reqId Request ID.
+ * @apiParam {String} id Request ID.
  *
  * @apiSuccess {String} status Success/Error.
  * @apiSuccess {String} message Response message.
- * @apiSuccess {Object[]} body Response Object[].
  *
  * @apiErrorExample {json} Error-Response:
  *     {
@@ -803,7 +796,7 @@ app.post("/cancelFriendRequest", function (req, res) {
         return;
     }
 
-    let reqId = req.body.reqId;
+    let reqId = req.body.id;
 
     if (!reqId) {
         res.json({status: statusError, message: "Empty parameters"});
@@ -835,11 +828,10 @@ app.post("/cancelFriendRequest", function (req, res) {
  * @apiVersion 0.0.1
  *
  * @apiParam {String} apiKey Key for API authentication.
- * @apiParam {String} reqId Request ID.
+ * @apiParam {String} id Request ID.
  *
  * @apiSuccess {String} status Success/Error.
  * @apiSuccess {String} message Response message.
- * @apiSuccess {Object[]} body Response Object[].
  *
  * @apiErrorExample {json} Error-Response:
  *     {
@@ -858,7 +850,7 @@ app.post("/acceptFriendRequest", function (req, res) {
         return;
     }
 
-    let reqId = req.body.reqId;
+    let reqId = req.body.id;
 
     if (!reqId) {
         res.json({status: statusError, message: "Empty parameters"});
@@ -911,11 +903,10 @@ app.post("/acceptFriendRequest", function (req, res) {
  * @apiVersion 0.0.1
  *
  * @apiParam {String} apiKey Key for API authentication.
- * @apiParam {String} reqId Request ID.
+ * @apiParam {String} id Request ID.
  *
  * @apiSuccess {String} status Success/Error.
  * @apiSuccess {String} message Response message.
- * @apiSuccess {Object[]} body Response Object[].
  *
  * @apiErrorExample {json} Error-Response:
  *     {
@@ -926,7 +917,7 @@ app.post("/acceptFriendRequest", function (req, res) {
  * @apiSuccessExample {json} Success-Response:
  *     {
  *        "status": "Success",
- *        "message": "Request cancelled",
+ *        "message": "Request rejected",
  *   }
  */
 app.post("/rejectFriendRequest", function (req, res) {
@@ -934,7 +925,7 @@ app.post("/rejectFriendRequest", function (req, res) {
         return;
     }
 
-    let reqId = req.body.reqId;
+    let reqId = req.body.id;
 
     if (!reqId) {
         res.json({status: statusError, message: "Empty parameters"});
@@ -1033,6 +1024,10 @@ app.post("/searchGlobalUsers", function (req, res) {
             return
         }
     }
+});
+
+http.createServer(app).listen(port, function () {
+    console.log("Server running on port " + port);
 });
 
 function generateUUID() {

@@ -1,0 +1,13 @@
+{
+    "name": "BRGUServer",
+    "version": "0.1.0",
+    "description": "Brands Guru Server Documentation",
+    "title": "Brands Guru Server Documentation",
+    "url" : "https://192.168.0.107:3000",
+    "order": [
+      "Superuser",
+      "Admin",
+      "Admin/Client",
+      "Client"
+    ]
+}
