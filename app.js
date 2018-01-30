@@ -124,9 +124,15 @@ app.post("/addRequestType", function (req, res) {
         return;
     }
 
-    let id = req.body.id;
+    let id = parseInt(req.body.id);
     let name = req.body.typeName;
-    if (!id || !name) {
+
+    if (isNaN(id)) {
+        res.json({status: statusError, message: "Invalid parameters"});
+        return  
+    }
+
+    if (!name) {
         res.json({status: statusError, message: "Empty parameters"});
         return
     }
