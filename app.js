@@ -194,12 +194,12 @@ app.post("/signUpUser", function (req, res) {
     let age = req.body.age;
     let location = req.body.location;
 
-    if (!userName || !password || !name || !location) {
+    if (!userName || !password || !name) {
         res.json({status: statusError, message: "Empty parameters"});
         return
     }
 
-    if (isNaN(age) || !location.contains(",")) {
+    if (isNaN(age) || !location.includes(",")) {
         res.json({status: statusError, message: "Invalid parameters"});
         return
     }
@@ -228,11 +228,11 @@ app.post("/signUpUser", function (req, res) {
                 userName: userName,
                 password: password,
                 name: name,
-                age: age,
+                age: parseInt(age),
                 location: location
             }, true);
             addLocation(userName, location);
-            res.json({status: statusSuccess, message: "Type added"});
+            res.json({status: statusSuccess, message: "User signed up"});
         })
     } catch (e) {
         console.log(e);
@@ -386,6 +386,22 @@ app.post("/getLocationFriends", function (req, res) {
                     name: item.name,
                     age: item.age,
                     location: item.location
+                }
+            })
+        }
+    )
+});
+
+app.post("/getAllUsers", function (req, res) {
+    let users = realm.objects("Users");
+    res.json(
+        {
+            status: statusSuccess,
+            message: "All users fetched",
+            body: users.map(function (item) {
+                return {
+                    userName: item.userName,
+                    name: item.name
                 }
             })
         }
@@ -1044,7 +1060,7 @@ function generateUUID() {
 }
 
 function addLocation(userName, location) {
-    let user = realm.objectForPrimaryKey("User", userName);
+    let user = realm.objectForPrimaryKey("Users", userName);
     user.locationHistory.push(location);
 }
 
