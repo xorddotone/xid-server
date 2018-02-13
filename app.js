@@ -74,11 +74,6 @@ const realm = new Realm({
     schemaVersion: schemaVersionNumber
 });
 
-realm.write(() => {
-    realm.deleteAll()
-    console.log("Deleted")
-})
-
 app.use(bodyParser.urlencoded({extended: false}));
 // app.use(logger("dev"));
 app.use(cors());
