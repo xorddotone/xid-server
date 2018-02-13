@@ -1,13 +1,11 @@
 {
-  "name": "BRGUServer",
+  "name": "SLSHServer",
   "version": "0.1.0",
-  "description": "Brands Guru Server Documentation",
-  "title": "Brands Guru Server Documentation",
-  "url": "https://192.168.0.107:3000",
+  "description": "SLSH Server Documentation",
+  "title": "SLSH Server Documentation",
+  "url": "https://slsh-android.herokuapp.com",
   "order": [
-    "Superuser",
     "Admin",
-    "Admin/Client",
     "Client"
   ],
   "sampleUrl": false,
@@ -15,7 +13,7 @@
   "apidoc": "0.3.0",
   "generator": {
     "name": "apidoc",
-    "time": "2017-12-25T05:58:45.013Z",
+    "time": "2018-02-13T16:01:22.345Z",
     "url": "http://apidocjs.com",
     "version": "0.17.6"
   }

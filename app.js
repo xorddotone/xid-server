@@ -9,6 +9,7 @@ const UserSchema = {
         password: 'string',
         name: {type: 'string', indexed: true},
         age: {type: 'int', indexed: true},
+        description: 'string',
         location: {type: 'string', indexed: true},
         isInMotion: {type: 'bool', default: false, indexed: true},
         locationHistory: 'string[]',
@@ -73,6 +74,11 @@ const realm = new Realm({
     schemaVersion: schemaVersionNumber
 });
 
+realm.write(() => {
+    realm.deleteAll()
+    console.log("Deleted")
+})
+
 app.use(bodyParser.urlencoded({extended: false}));
 // app.use(logger("dev"));
 app.use(cors());
@@ -92,63 +98,6 @@ app.use(cors());
  */
 app.get('/connectionTest', function (req, res) {
     res.json({status: statusSuccess, message: "Server is up and ready"});
-});
-
-/**
- * @api {post} /addRequestType Add request type in database
- * @apiName addRequestType
- * @apiGroup Superuser
- * @apiVersion 0.0.1
- *
- * @apiParam {String} apiKey Key for API authentication.
- * @apiParam {Int} id Request type ID.
- * @apiParam {String} typeName Request type name.
- *
- * @apiSuccess {String} status Success/Error.
- * @apiSuccess {String} message Response message.
- *
- * @apiErrorExample {json} Error-Response:
- *     {
- *        "status": "Error",
- *        "message": "Invalid API Key"
- *      }
- *
- * @apiSuccessExample {json} Success-Response:
- *     {
- *        "status": "Success",
- *        "message": "Type added"
- *      }
- */
-app.post("/addRequestType", function (req, res) {
-    if (!isSuperuserKeyValid(req, res)) {
-        return;
-    }
-
-    let id = parseInt(req.body.id);
-    let name = req.body.typeName;
-
-    if (isNaN(id)) {
-        res.json({status: statusError, message: "Invalid parameters"});
-        return  
-    }
-
-    if (!name) {
-        res.json({status: statusError, message: "Empty parameters"});
-        return
-    }
-
-    try {
-        realm.write(() => {
-            realm.create("RequestTypes", {
-                id: id,
-                typeName: name
-            }, true);
-            res.json({status: statusSuccess, message: "Type added"});
-        })
-    } catch (e) {
-        console.log(e);
-        res.json({status: statusError, message: 'Write Failed'});
-    }
 });
 
 /**
@@ -224,15 +173,27 @@ app.post("/signUpUser", function (req, res) {
 
     try {
         realm.write(() => {
-            realm.create("Users", {
+            let item = realm.create("Users", {
                 userName: userName,
                 password: password,
                 name: name,
                 age: parseInt(age),
+                description: "",
                 location: location
             }, true);
             addLocation(userName, location);
-            res.json({status: statusSuccess, message: "User signed up"});
+            res.json(
+                {
+                    status: statusSuccess,
+                    message: "User signed up",
+                    body: {
+                        userName: item.userName,
+                        name: item.name,
+                        age: item.age,
+                        description: item.description
+                    }
+                }
+            )
         })
     } catch (e) {
         console.log(e);
@@ -263,11 +224,53 @@ app.post("/signUpUser", function (req, res) {
  * @apiSuccessExample {json} Success-Response:
  *     {
  *        "status": "Success",
- *        "message": "User credentials valid",
+ *        "message": "User signed in",
  *        "body": {
- *              userName: "sami",
- *              name: "Abdul Sami",
- *              age: 21
+ *              userName: "user",
+ *              name: "User",
+ *              age: 21,
+ *              description: "Description",
+ *              location: "87.5436,67.53567",
+ *              isInMotion: false,
+ *              locationHistory: [
+ *                  "87.5436,67.53567",
+ *                  "87.5436,67.53567",
+ *                  "87.5436,67.53567"
+ *              ],
+ *              locationFriends: [
+ *                  "USER-24gdgdgh-fdgsds-4343dggd",
+ *                  "USER-24gdgdgh-fdgsds-4343dggd",
+ *                  "USER-24gdgdgh-fdgsds-4343dggd",
+ *              ],
+ *              motionFriends: [
+ *                  "USER-24gdgdgh-fdgsds-4343dggd",
+ *                  "USER-24gdgdgh-fdgsds-4343dggd",
+ *                  "USER-24gdgdgh-fdgsds-4343dggd",
+ *              ],
+ *              receivedRequests: [
+ *                  {
+ *                      id: "REQ-gfg-dfgdf3-fdgd3",
+ *                      toUser: "USER-24gdgdgh-fdgsds-4343dggd",
+ *                      typeId: 0
+ *                  },
+ *                  {
+ *                      id: "REQ-gfg-dfgdf3-fdgd3",
+ *                      toUser: "USER-24gdgdgh-fdgsds-4343dggd",
+ *                      typeId: 0
+ *                  }
+ *              ],
+ *              sentRequests: [
+ *                  {
+ *                      id: "REQ-gfg-dfgdf3-fdgd3",
+ *                      toUser: "USER-24gdgdgh-fdgsds-4343dggd",
+ *                      typeId: 0
+ *                  },
+ *                  {
+ *                      id: "REQ-gfg-dfgdf3-fdgd3",
+ *                      toUser: "USER-24gdgdgh-fdgsds-4343dggd",
+ *                      typeId: 0
+ *                  }
+ *              ]
  *        }
  *   }
  */
@@ -296,6 +299,22 @@ app.post("/signInUser", function (req, res) {
         return
     }
 
+    let requests = realm.objects("FriendRequests");
+    let receivedRequests = [];
+    let sentRequests = [];
+
+    requests.forEach(function(item) {
+        if (item.toUser === userName) {
+            receivedRequests.push(item);
+        }
+    });
+
+    requests.forEach(function(item) {
+        if (item.fromUser === userName) {
+            sentRequests.push(item);
+        }
+    });
+
     res.json(
         {
             status: statusSuccess,
@@ -304,15 +323,246 @@ app.post("/signInUser", function (req, res) {
                 userName: user.userName,
                 name: user.name,
                 age: user.age,
-                receivedRequests: user.receivedRequests.map(mapNumberList)
+                description: user.description,
+                location: user.location,
+                isInMotion: user.isInMotion,
+                locationHistory: user.locationHistory.map(mapNumberList),
+                locationFriends: user.locationFriends.map(mapNumberList),
+                motionFriends: user.motionFriends.map(mapNumberList),
+                receivedRequests: receivedRequests.map(function (item) {
+                    return {
+                        id: item.id,
+                        userName: item.fromUser,
+                        date: item.date,
+                        typeId: item.typeId
+                    }
+                }),
+                sentRequests: sentRequests.map(function (item) {
+                    return {
+                        id: item.id,
+                        userName: item.toUser,
+                        date: item.date,
+                        typeId: item.typeId
+                    }
+                })
             }
         }
     )
 });
 
 /**
- * @api {post} /getLocationFriends Get all location friends of a user
- * @apiName getLocationFriends
+ * @api {post} /getMinimalUser Get minimal user
+ * @apiName getMinimalUser
+ * @apiGroup Client
+ * @apiVersion 0.0.1
+ *
+ * @apiParam {String} apiKey Key for API authentication.
+ * @apiParam {String} userName Username.
+ *
+ * @apiSuccess {String} status Success/Error.
+ * @apiSuccess {String} message Response message.
+ * @apiSuccess {Object} body Response Object.
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     {
+ *        "status": "Error",
+ *        "message": "Invalid API Key"
+ *      }
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     {
+ *        "status": "Success",
+ *        "message": "User profile fetched",
+ *        "body": {
+ *              userName: "user",
+ *              name: "User",
+ *              age: 21,
+ *              description: "Description"
+ *        }
+ *   }
+ */
+app.post("/getMinimalUser", function (req, res) {
+    if (!isKeyValid(req, res)) {
+        return;
+    }
+
+    let userName = req.body.userName;
+    
+    if (!userName) {
+        res.json({status: statusError, message: "Empty parameters"});
+        return
+    }
+
+    let user = realm.objectForPrimaryKey("Users", userName);
+
+    if (!user) {
+        res.json({status: statusError, message: "Invalid Username"});
+        return
+    }
+
+    res.json(
+        {
+            status: statusSuccess,
+            message: "User profile fetched",
+            body: {
+                userName: user.userName,
+                name: user.name,
+                age: user.age,
+                description: user.description
+            }
+        }
+    )
+});
+
+/**
+ * @api {post} /getUser Get user
+ * @apiName getUser
+ * @apiGroup Client
+ * @apiVersion 0.0.1
+ *
+ * @apiParam {String} apiKey Key for API authentication.
+ * @apiParam {String} userName Username.
+ *
+ * @apiSuccess {String} status Success/Error.
+ * @apiSuccess {String} message Response message.
+ * @apiSuccess {Object} body Response Object.
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     {
+ *        "status": "Error",
+ *        "message": "Invalid API Key"
+ *      }
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     {
+ *        "status": "Success",
+ *        "message": "User profile fetched",
+ *        "body": {
+ *              userName: "user",
+ *              name: "User",
+ *              age: 21,
+ *              description: "Description",
+ *              location: "87.5436,67.53567",
+ *              isInMotion: false,
+ *              locationHistory: [
+ *                  "87.5436,67.53567",
+ *                  "87.5436,67.53567",
+ *                  "87.5436,67.53567"
+ *              ],
+ *              locationFriends: [
+ *                  "USER-24gdgdgh-fdgsds-4343dggd",
+ *                  "USER-24gdgdgh-fdgsds-4343dggd",
+ *                  "USER-24gdgdgh-fdgsds-4343dggd",
+ *              ],
+ *              motionFriends: [
+ *                  "USER-24gdgdgh-fdgsds-4343dggd",
+ *                  "USER-24gdgdgh-fdgsds-4343dggd",
+ *                  "USER-24gdgdgh-fdgsds-4343dggd",
+ *              ],
+ *              receivedRequests: [
+ *                  {
+ *                      id: "REQ-gfg-dfgdf3-fdgd3",
+ *                      userName: "USER-24gdgdgh-fdgsds-4343dggd",
+ *                      date: 24562345,
+ *                      typeId: 0
+ *                  },
+ *                  {
+ *                      id: "REQ-gfg-dfgdf3-fdgd3",
+ *                      userName: "USER-24gdgdgh-fdgsds-4343dggd",
+ *                      date: 24562345,
+ *                      typeId: 0
+ *                  }
+ *              ],
+ *              sentRequests: [
+ *                  {
+ *                      id: "REQ-gfg-dfgdf3-fdgd3",
+ *                      userName: "USER-24gdgdgh-fdgsds-4343dggd",
+ *                      date: 24562345,
+ *                      typeId: 0
+ *                  },
+ *                  {
+ *                      id: "REQ-gfg-dfgdf3-fdgd3",
+ *                      userName: "USER-24gdgdgh-fdgsds-4343dggd",
+ *                      date: 24562345,
+ *                      typeId: 0
+ *                  }
+ *              ]
+ *        }
+ *   }
+ */
+app.post("/getUser", function (req, res) {
+    if (!isKeyValid(req, res)) {
+        return;
+    }
+
+    let userName = req.body.userName;
+    
+    if (!userName) {
+        res.json({status: statusError, message: "Empty parameters"});
+        return
+    }
+
+    let user = realm.objectForPrimaryKey("Users", userName);
+
+    if (!user) {
+        res.json({status: statusError, message: "Invalid Username"});
+        return
+    }
+
+    let requests = realm.objects("FriendRequests");
+    let receivedRequests = [];
+    let sentRequests = [];
+
+    requests.forEach(function(item) {
+        if (item.toUser === userName) {
+            receivedRequests.push(item);
+        }
+    });
+
+    requests.forEach(function(item) {
+        if (item.fromUser === userName) {
+            sentRequests.push(item);
+        }
+    });
+
+    res.json(
+        {
+            status: statusSuccess,
+            message: "User profile fetched",
+            body: {
+                userName: user.userName,
+                name: user.name,
+                age: user.age,
+                description: user.description,
+                location: user.location,
+                isInMotion: user.isInMotion,
+                locationHistory: user.locationHistory.map(mapNumberList),
+                locationFriends: user.locationFriends.map(mapNumberList),
+                motionFriends: user.motionFriends.map(mapNumberList),
+                receivedRequests: receivedRequests.map(function (item) {
+                    return {
+                        id: item.id,
+                        userName: item.fromUser,
+                        date: item.date,
+                        typeId: item.typeId
+                    }
+                }),
+                sentRequests: sentRequests.map(function (item) {
+                    return {
+                        id: item.id,
+                        userName: item.toUser,
+                        date: item.date,
+                        typeId: item.typeId
+                    }
+                })
+            }
+        }
+    )
+});
+
+/**
+ * @api {post} /getAllFriends Get all friends of a user
+ * @apiName getAllFriends
  * @apiGroup Client
  * @apiVersion 0.0.1
  *
@@ -335,27 +585,24 @@ app.post("/signInUser", function (req, res) {
  *        "message": "Friends fetched",
  *        "body": [
  *              {
- *                  userName: "sami",
- *                  name: "Abdul Sami",
- *                  age: "21",
- *                  location: "24.9008297,67.1680825"
+ *                  userName: "user",
+ *                  name: "User",
+ *                  age: "21"
  *              },
  *              {
- *                  userName: "sami",
- *                  name: "Abdul Sami",
- *                  age: "21",
- *                  location: "24.9008297,67.1680825"
+ *                  userName: "user",
+ *                  name: "User",
+ *                  age: "21"
  *              },
  *              {
- *                  userName: "sami",
- *                  name: "Abdul Sami",
- *                  age: "21",
- *                  location: "24.9008297,67.1680825"
+ *                  userName: "user",
+ *                  name: "User",
+ *                  age: "21"
  *              }
  *        ]
  *   }
  */
-app.post("/getLocationFriends", function (req, res) {
+app.post("/getAllFriends", function (req, res) {
     if (!isClientKeyValid(req, res)) {
         return;
     }
@@ -374,26 +621,84 @@ app.post("/getLocationFriends", function (req, res) {
         return
     }
 
-    let friends = user.locationFriends;
+    let friends = realm.objects("Users");
+    let userFriends = []
+    for (var i = 0; i < friends.length; i++) {
+        for (var j = 0; j < user.locationFriends.length; j++) {
+            if (user.locationFriends[j] === friends[i].userName) {
+                userFriends.push(friends[i])
+            }
+        }
+        for (var j = 0; j < user.motionFriends.length; j++) {
+            if (user.motionFriends[j] === friends[i].userName) {
+                userFriends.push(friends[i])
+            }
+        }
+    }
 
     res.json(
         {
             status: statusSuccess,
-            message: "User credentials valid",
-            body: friends.map(function (item) {
+            message: "Friends fetched",
+            body: userFriends.map(function (item) {
                 return {
                     userName: item.userName,
                     name: item.name,
-                    age: item.age,
-                    location: item.location
+                    age: item.age
                 }
             })
         }
     )
 });
 
+/**
+ * @api {post} /getAllUsers Get all users
+ * @apiName getAllUsers
+ * @apiGroup Client
+ * @apiVersion 0.0.1
+ *
+ * @apiParam {String} apiKey Key for API authentication.
+ *
+ * @apiSuccess {String} status Success/Error.
+ * @apiSuccess {String} message Response message.
+ * @apiSuccess {Object[]} body Response Object[].
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     {
+ *        "status": "Error",
+ *        "message": "Invalid API Key"
+ *      }
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     {
+ *        "status": "Success",
+ *        "message": "Friends fetched",
+ *        "body": [
+ *              {
+ *                  userName: "user",
+ *                  name: "User",
+ *                  age: "21",
+ *              },
+ *              {
+ *                  userName: "user",
+ *                  name: "User",
+ *                  age: "21",
+ *              },
+ *              {
+ *                  userName: "user",
+ *                  name: "User",
+ *                  age: "21",
+ *              }
+ *        ]
+ *   }
+ */
 app.post("/getAllUsers", function (req, res) {
+    if (!isKeyValid(req, res)) {
+        return;
+    }
+
     let users = realm.objects("Users");
+
     res.json(
         {
             status: statusSuccess,
@@ -401,89 +706,8 @@ app.post("/getAllUsers", function (req, res) {
             body: users.map(function (item) {
                 return {
                     userName: item.userName,
-                    name: item.name
-                }
-            })
-        }
-    )
-});
-
-/**
- * @api {post} /getMotionFriends Get all motion friends of a user
- * @apiName getMotionFriends
- * @apiGroup Client
- * @apiVersion 0.0.1
- *
- * @apiParam {String} apiKey Key for API authentication.
- * @apiParam {String} userName Username.
- *
- * @apiSuccess {String} status Success/Error.
- * @apiSuccess {String} message Response message.
- * @apiSuccess {Object[]} body Response Object[].
- *
- * @apiErrorExample {json} Error-Response:
- *     {
- *        "status": "Error",
- *        "message": "Invalid API Key"
- *      }
- *
- * @apiSuccessExample {json} Success-Response:
- *     {
- *        "status": "Success",
- *        "message": "Friends fetched",
- *        "body": [
- *              {
- *                  userName: "sami",
- *                  name: "Abdul Sami",
- *                  age: "21",
- *                  isInMotion: true
- *              },
- *              {
- *                  userName: "sami",
- *                  name: "Abdul Sami",
- *                  age: "21",
- *                  isInMotion: false
- *              },
- *              {
- *                  userName: "sami",
- *                  name: "Abdul Sami",
- *                  age: "21",
- *                  isInMotion: true
- *              }
- *        ]
- *   }
- */
-app.post("/getMotionFriends", function (req, res) {
-    if (!isClientKeyValid(req, res)) {
-        return;
-    }
-
-    let userName = req.body.userName;
-
-    if (!userName) {
-        res.json({status: statusError, message: "Empty parameters"});
-        return
-    }
-
-    let user = realm.objectForPrimaryKey("Users", userName);
-
-    if (!user) {
-        res.json({status: statusError, message: "User does not exist"});
-        return
-    }
-
-    let friends = user.motionFriends;
-
-    res.json(
-        {
-            status: statusSuccess,
-            message: "User credentials valid",
-            body: friends.map(function (item) {
-                return {
-                    userName: item.userName,
                     name: item.name,
-                    age: item.age,
-                    isInMotion: item.isInMotion
+                    age: item.age
                 }
             })
         }
@@ -516,21 +740,24 @@ app.post("/getMotionFriends", function (req, res) {
  *        "body": [
  *              {
  *                  id: "REQ-sdfdfd-zvdgdg-arereggdd",
- *                  fromUser: "sami",
- *                  date: 1345674343,
- *                  typeId: 0
+                    userName: "user",
+                    userFullName: "User",
+                    date: 1345674343,
+                    typeId: 1,
  *              },
  *              {
  *                  id: "REQ-sdfdfd-zvdgdg-arereggdd",
- *                  fromUser: "sami",
- *                  date: 1345674343,
- *                  typeId: 1
+                    userName: "user",
+                    userFullName: "User",
+                    date: 1345674343,
+                    typeId: 1,
  *              },
  *              {
  *                  id: "REQ-sdfdfd-zvdgdg-arereggdd",
- *                  fromUser: "sami",
- *                  date: 1345674343,
- *                  typeId: 0
+                    userName: "user",
+                    userFullName: "User",
+                    date: 1345674343,
+                    typeId: 0,
  *              }
  *        ]
  *   }
@@ -554,16 +781,25 @@ app.post("/getFriendRequests", function (req, res) {
         return
     }
 
-    let requests = user.receivedRequests;
+    let requests = realm.objects("FriendRequests");
+    let receivedRequests = [];
+
+    requests.forEach(function(item) {
+        if (item.toUser === userName) {
+            receivedRequests.push(item);
+        }
+    });
 
     res.json(
         {
             status: statusSuccess,
             message: "Friend requests fetched",
-            body: requests.map(function (item) {
+            body: receivedRequests.map(function (item) {
+                var name = realm.objectForPrimaryKey("Users", item.fromUser).name;
                 return {
                     id: item.id,
-                    fromUser: item.fromUser,
+                    userName: item.fromUser,
+                    userFullName: name,
                     date: item.date,
                     typeId: item.typeId,
                 }
@@ -611,7 +847,7 @@ app.post("/updateLocation", function (req, res) {
         return
     }
 
-    if (!location.contains(",")) {
+    if (!location.includes(",")) {
         res.json({status: statusError, message: "Invalid parameters"});
         return
     }
@@ -648,7 +884,7 @@ app.post("/updateLocation", function (req, res) {
 });
 
 /**
- * @api {post} /updateMotionStatus Update location of a user
+ * @api {post} /updateMotionStatus Update movement status of a user
  * @apiName updateMotionStatus
  * @apiGroup Client
  * @apiVersion 0.0.1
@@ -679,17 +915,17 @@ app.post("/updateMotionStatus", function (req, res) {
     }
 
     let userName = req.body.userName;
-    let status = req.body.isInMotion;
+    let status = JSON.parse(req.body.isInMotion);
 
     if (!userName) {
         res.json({status: statusError, message: "Empty parameters"});
         return
     }
 
-    if (typeof status !== 'boolean') {
-        res.json({status: statusError, message: "Invalid parameters"});
-        return
-    }
+    // if (typeof status !== 'boolean') {
+        // res.json({status: statusError, message: "Invalid parameters"});
+        // return
+    // }
 
     let user = realm.objectForPrimaryKey("Users", userName);
 
@@ -710,6 +946,142 @@ app.post("/updateMotionStatus", function (req, res) {
 });
 
 /**
+ * @api {post} /getLocation Get location of a user
+ * @apiName getLocation
+ * @apiGroup Client
+ * @apiVersion 0.0.1
+ *
+ * @apiParam {String} apiKey Key for API authentication.
+ * @apiParam {String} userName Username of user.
+ *
+ * @apiSuccess {String} status Success/Error.
+ * @apiSuccess {String} message Response message.
+ * @apiSuccess {Object} body Response Object.
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     {
+ *        "status": "Error",
+ *        "message": "Invalid API Key"
+ *      }
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     {
+ *        "status": "Success",
+ *        "message": "Location fetched",
+ *        "body": {
+ *              latitude: "67.5456",
+ *              longitude: "68.6634"
+ *        }
+ *   }
+ */
+app.post("/getLocation", function (req, res) {
+    if (!isClientKeyValid(req, res)) {
+        return;
+    }
+
+    let userName = req.body.userName;
+
+    if (!userName) {
+        res.json({status: statusError, message: "Empty parameters"});
+        return
+    }
+
+    let user = realm.objectForPrimaryKey("Users", userName);
+
+    if (!user) {
+        res.json({status: statusError, message: "User does not exist"});
+        return
+    }
+
+    try {
+        if (user.location.includes(",")) {
+            let result = user.location.split(",")
+            res.json({
+                status: statusSuccess, 
+                message: "Location fetched",
+                body: {
+                    latitude: result[0],
+                    longitude: result[1]
+                }
+            });
+        } else {
+            res.json({
+                status: statusSuccess, 
+                message: "Location fetched",
+                body: {
+                    latitude: "0.0",
+                    longitude: "0.0"
+                }
+            });
+        }
+    } catch (e) {
+        console.log(e);
+        res.json({status: statusError, message: 'Write Failed'});
+    }
+});
+
+/**
+ * @api {post} /getMovementStatus Get movement status of a user
+ * @apiName getMovementStatus
+ * @apiGroup Client
+ * @apiVersion 0.0.1
+ *
+ * @apiParam {String} apiKey Key for API authentication.
+ * @apiParam {String} userName Username of user.
+ *
+ * @apiSuccess {String} status Success/Error.
+ * @apiSuccess {String} message Response message.
+ * @apiSuccess {Object} body Response Object.
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     {
+ *        "status": "Error",
+ *        "message": "Invalid API Key"
+ *      }
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     {
+ *        "status": "Success",
+ *        "message": "Movement Status fetched",
+ *        "body": {
+ *              isInMotion = true
+ *        }
+ *   }
+ */
+app.post("/getMovementStatus", function (req, res) {
+    if (!isClientKeyValid(req, res)) {
+        return;
+    }
+
+    let userName = req.body.userName;
+
+    if (!userName) {
+        res.json({status: statusError, message: "Empty parameters"});
+        return
+    }
+
+    let user = realm.objectForPrimaryKey("Users", userName);
+
+    if (!user) {
+        res.json({status: statusError, message: "User does not exist"});
+        return
+    }
+
+    try {
+        res.json({
+            status: statusSuccess, 
+            message: "Movement status fetched",
+            body: {
+                isInMotion: user.isInMotion
+            }
+        });
+    } catch (e) {
+        console.log(e);
+        res.json({status: statusError, message: 'Write Failed'});
+    }
+});
+
+/**
  * @api {post} /sendFriendRequest Send friend request to a user
  * @apiName sendFriendRequest
  * @apiGroup Client
@@ -722,6 +1094,7 @@ app.post("/updateMotionStatus", function (req, res) {
  *
  * @apiSuccess {String} status Success/Error.
  * @apiSuccess {String} message Response message.
+ * @apiSuccess {Object} body Response Object.
  *
  * @apiErrorExample {json} Error-Response:
  *     {
@@ -733,6 +1106,9 @@ app.post("/updateMotionStatus", function (req, res) {
  *     {
  *        "status": "Success",
  *        "message": "Request sent",
+ *        "body": {
+ *              id: "REQ-gdgwqrr-gfhfght-e56fhfh"
+ *        }
  *   }
  */
 app.post("/sendFriendRequest", function (req, res) {
@@ -742,20 +1118,10 @@ app.post("/sendFriendRequest", function (req, res) {
 
     let fromUserName = req.body.fromUserName;
     let toUserName = req.body.toUserName;
-    let type = req.body.typeId;
+    let typeId = req.body.typeId;
 
     if (!fromUserName || !toUserName) {
         res.json({status: statusError, message: "Empty parameters"});
-        return
-    }
-
-    if (isNaN(type)) {
-        res.json({status: statusError, message: "Invalid parameters"});
-        return
-    }
-
-    if (type !== 0 || type !== 1) {
-        res.json({status: statusError, message: "Invalid parameters"});
         return
     }
 
@@ -773,15 +1139,22 @@ app.post("/sendFriendRequest", function (req, res) {
     }
 
     try {
+        let id = 'REQ-' + fromUserName + '-' + toUserName;
         realm.write(() => {
-            user.sentRequests.push({
-                id: 'REQ-' + generateUUID(),
+            realm.create("FriendRequests", {
+                id: id,
                 fromUser: fromUserName,
                 toUser: toUserName,
                 date: Date.now(),
-                typeId: type
+                typeId: parseInt(typeId)
+            }, true);
+            res.json({
+                status: statusSuccess, 
+                message: "Request sent",
+                body: {
+                    id: id
+                }
             });
-            res.json({status: statusSuccess, message: "Request sent"});
         })
     } catch (e) {
         console.log(e);
@@ -964,7 +1337,7 @@ app.post("/rejectFriendRequest", function (req, res) {
     try {
         realm.write(() => {
             realm.delete(request);
-            res.json({status: statusSuccess, message: "Request accepted"});
+            res.json({status: statusSuccess, message: "Request rejected"});
         })
     } catch (e) {
         console.log(e);
@@ -973,18 +1346,17 @@ app.post("/rejectFriendRequest", function (req, res) {
 });
 
 /**
- * @api {post} /searchGlobalUsers Search for all users in the database
- * @apiName searchGlobalUsers
+ * @api {post} /removeFriend Remove friend
+ * @apiName removeFriend
  * @apiGroup Client
  * @apiVersion 0.0.1
  *
  * @apiParam {String} apiKey Key for API authentication.
- * @apiParam {Object} query Query for search.
- * @apiParam {Int} criteria Criteria for search.
+ * @apiParam {String} userName Username
+ * @apiParam {String} friendUserName Friend Username
  *
  * @apiSuccess {String} status Success/Error.
  * @apiSuccess {String} message Response message.
- * @apiSuccess {Object[]} body Response Object[].
  *
  * @apiErrorExample {json} Error-Response:
  *     {
@@ -995,56 +1367,61 @@ app.post("/rejectFriendRequest", function (req, res) {
  * @apiSuccessExample {json} Success-Response:
  *     {
  *        "status": "Success",
- *        "message": "All users fetched",
- *        "body": [
- *              {
- *                  userName: "sami",
- *                  name: "Abdul Sami",
- *                  age: "21"
- *              },
- *              {
- *                  userName: "sami",
- *                  name: "Abdul Sami",
- *                  age: "21"
- *              },
- *              {
- *                  userName: "sami",
- *                  name: "Abdul Sami",
- *                  age: "21"
- *              }
- *        ]
+ *        "message": "Friend removed",
  *   }
  */
-app.post("/searchGlobalUsers", function (req, res) {
+app.post("/removeFriend", function (req, res) {
     if (!isClientKeyValid(req, res)) {
         return;
     }
 
-    let query = req.body.query;
-    let criteria = req.body.criteria;
+    let userName = req.body.userName;
+    let friendUserName = req.body.friendUserName;
 
-    if (!query || !criteria) {
+    if (!userName || !friendUserName) {
         res.json({status: statusError, message: "Empty parameters"});
         return
     }
 
-    switch (criteria) {
-        case 0: {
-            break;
-        }
-        case 1: {
-            break;
-        }
-        case 2: {
-            break;
-        }
-        case 3: {
-            break;
-        }
-        default: {
-            res.json({status: statusError, message: "Invalid criteria"});
-            return
-        }
+    let user = realm.objectForPrimaryKey("Users", userName);
+    let friend = realm.objectForPrimaryKey("Users", friendUserName);
+
+    if (!user || !friendUserName) {
+        res.json({status: statusError, message: "Invalid username"});
+        return
+    }
+
+    try {
+        realm.write(() => {
+            user.locationFriends.forEach(function(item) {
+                if (item == friendUserName) {
+                    var index = user.locationFriends.indexOf(item);
+                    if (index !== -1) user.locationFriends.splice(index, 1);
+                }
+            })
+            user.motionFriends.forEach(function(item) {
+                if (item == friendUserName) {
+                    var index = user.motionFriends.indexOf(item);
+                    if (index !== -1) user.motionFriends.splice(index, 1);
+                }
+            })
+            friend.locationFriends.forEach(function(item) {
+                if (item == userName) {
+                    var index = friend.locationFriends.indexOf(item);
+                    if (index !== -1) friend.locationFriends.splice(index, 1);
+                }
+            })
+            friend.motionFriends.forEach(function(item) {
+                if (item == userName) {
+                    var index = friend.motionFriends.indexOf(item);
+                    if (index !== -1) friend.motionFriends.splice(index, 1);
+                }
+            })
+            res.json({status: statusSuccess, message: "Friend removed"});
+        })
+    } catch (e) {
+        console.log(e);
+        res.json({status: statusError, message: 'Write Failed'});
     }
 });
 
@@ -1062,6 +1439,14 @@ function generateUUID() {
 function addLocation(userName, location) {
     let user = realm.objectForPrimaryKey("Users", userName);
     user.locationHistory.push(location);
+}
+
+function isKeyValid(req, res) {
+    if (superuserKeys.indexOf(req.body.apiKey) === -1 && clientKeys.indexOf(req.body.apiKey) === -1) {
+        res.json({status: statusError, message: "Invalid API Key"});
+        return false;
+    }
+    return true;
 }
 
 function isSuperuserKeyValid(req, res) {
@@ -1083,3 +1468,14 @@ function isClientKeyValid(req, res) {
 function mapNumberList(number) {
     return number;
 }
+
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};

@@ -133,6 +133,145 @@ define({ "api": [
   },
   {
     "type": "post",
+    "url": "/getAllFriends",
+    "title": "Get all friends of a user",
+    "name": "getAllFriends",
+    "group": "Client",
+    "version": "0.0.1",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "apiKey",
+            "description": "<p>Key for API authentication.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "userName",
+            "description": "<p>Username.</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Success/Error.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>Response message.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object[]",
+            "optional": false,
+            "field": "body",
+            "description": "<p>Response Object[].</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"Friends fetched\",\n     \"body\": [\n           {\n               userName: \"user\",\n               name: \"User\",\n               age: \"21\"\n           },\n           {\n               userName: \"user\",\n               name: \"User\",\n               age: \"21\"\n           },\n           {\n               userName: \"user\",\n               name: \"User\",\n               age: \"21\"\n           }\n     ]\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "{\n   \"status\": \"Error\",\n   \"message\": \"Invalid API Key\"\n }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "D:/Expendive/Workspace/NodeJS/SLSHServer/app.js",
+    "groupTitle": "Client"
+  },
+  {
+    "type": "post",
+    "url": "/getAllUsers",
+    "title": "Get all users",
+    "name": "getAllUsers",
+    "group": "Client",
+    "version": "0.0.1",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "apiKey",
+            "description": "<p>Key for API authentication.</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Success/Error.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>Response message.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object[]",
+            "optional": false,
+            "field": "body",
+            "description": "<p>Response Object[].</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"Friends fetched\",\n     \"body\": [\n           {\n               userName: \"user\",\n               name: \"User\",\n               age: \"21\",\n           },\n           {\n               userName: \"user\",\n               name: \"User\",\n               age: \"21\",\n           },\n           {\n               userName: \"user\",\n               name: \"User\",\n               age: \"21\",\n           }\n     ]\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "{\n   \"status\": \"Error\",\n   \"message\": \"Invalid API Key\"\n }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "D:/Expendive/Workspace/NodeJS/SLSHServer/app.js",
+    "groupTitle": "Client"
+  },
+  {
+    "type": "post",
     "url": "/getFriendRequests",
     "title": "Get all friend requests of a user",
     "name": "getFriendRequests",
@@ -187,7 +326,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"Friend requests fetched\",\n     \"body\": [\n           {\n               id: \"REQ-sdfdfd-zvdgdg-arereggdd\",\n               fromUser: \"sami\",\n               date: 1345674343,\n               typeId: 0\n           },\n           {\n               id: \"REQ-sdfdfd-zvdgdg-arereggdd\",\n               fromUser: \"sami\",\n               date: 1345674343,\n               typeId: 1\n           },\n           {\n               id: \"REQ-sdfdfd-zvdgdg-arereggdd\",\n               fromUser: \"sami\",\n               date: 1345674343,\n               typeId: 0\n           }\n     ]\n}",
+          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"Friend requests fetched\",\n     \"body\": [\n           {\n               id: \"REQ-sdfdfd-zvdgdg-arereggdd\",\n                  userName: \"user\",\n                  userFullName: \"User\",\n                  date: 1345674343,\n                  typeId: 1,\n           },\n           {\n               id: \"REQ-sdfdfd-zvdgdg-arereggdd\",\n                  userName: \"user\",\n                  userFullName: \"User\",\n                  date: 1345674343,\n                  typeId: 1,\n           },\n           {\n               id: \"REQ-sdfdfd-zvdgdg-arereggdd\",\n                  userName: \"user\",\n                  userFullName: \"User\",\n                  date: 1345674343,\n                  typeId: 0,\n           }\n     ]\n}",
           "type": "json"
         }
       ]
@@ -206,9 +345,82 @@ define({ "api": [
   },
   {
     "type": "post",
-    "url": "/getLocationFriends",
-    "title": "Get all location friends of a user",
-    "name": "getLocationFriends",
+    "url": "/getLocation",
+    "title": "Get location of a user",
+    "name": "getLocation",
+    "group": "Client",
+    "version": "0.0.1",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "apiKey",
+            "description": "<p>Key for API authentication.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "userName",
+            "description": "<p>Username of user.</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Success/Error.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>Response message.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "body",
+            "description": "<p>Response Object.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"Location fetched\",\n     \"body\": {\n           latitude: \"67.5456\",\n           longitude: \"68.6634\"\n     }\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "{\n   \"status\": \"Error\",\n   \"message\": \"Invalid API Key\"\n }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "D:/Expendive/Workspace/NodeJS/SLSHServer/app.js",
+    "groupTitle": "Client"
+  },
+  {
+    "type": "post",
+    "url": "/getMinimalUser",
+    "title": "Get minimal user",
+    "name": "getMinimalUser",
     "group": "Client",
     "version": "0.0.1",
     "parameter": {
@@ -250,17 +462,17 @@ define({ "api": [
           },
           {
             "group": "Success 200",
-            "type": "Object[]",
+            "type": "Object",
             "optional": false,
             "field": "body",
-            "description": "<p>Response Object[].</p>"
+            "description": "<p>Response Object.</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"Friends fetched\",\n     \"body\": [\n           {\n               userName: \"sami\",\n               name: \"Abdul Sami\",\n               age: \"21\",\n               location: \"24.9008297,67.1680825\"\n           },\n           {\n               userName: \"sami\",\n               name: \"Abdul Sami\",\n               age: \"21\",\n               location: \"24.9008297,67.1680825\"\n           },\n           {\n               userName: \"sami\",\n               name: \"Abdul Sami\",\n               age: \"21\",\n               location: \"24.9008297,67.1680825\"\n           }\n     ]\n}",
+          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"User profile fetched\",\n     \"body\": {\n           userName: \"user\",\n           name: \"User\",\n           age: 21,\n           description: \"Description\"\n     }\n}",
           "type": "json"
         }
       ]
@@ -279,9 +491,82 @@ define({ "api": [
   },
   {
     "type": "post",
-    "url": "/getMotionFriends",
-    "title": "Get all motion friends of a user",
-    "name": "getMotionFriends",
+    "url": "/getMovementStatus",
+    "title": "Get movement status of a user",
+    "name": "getMovementStatus",
+    "group": "Client",
+    "version": "0.0.1",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "apiKey",
+            "description": "<p>Key for API authentication.</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "userName",
+            "description": "<p>Username of user.</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Success/Error.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>Response message.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "body",
+            "description": "<p>Response Object.</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Success-Response:",
+          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"Movement Status fetched\",\n     \"body\": {\n           isInMotion = true\n     }\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "error": {
+      "examples": [
+        {
+          "title": "Error-Response:",
+          "content": "{\n   \"status\": \"Error\",\n   \"message\": \"Invalid API Key\"\n }",
+          "type": "json"
+        }
+      ]
+    },
+    "filename": "D:/Expendive/Workspace/NodeJS/SLSHServer/app.js",
+    "groupTitle": "Client"
+  },
+  {
+    "type": "post",
+    "url": "/getUser",
+    "title": "Get user",
+    "name": "getUser",
     "group": "Client",
     "version": "0.0.1",
     "parameter": {
@@ -323,17 +608,17 @@ define({ "api": [
           },
           {
             "group": "Success 200",
-            "type": "Object[]",
+            "type": "Object",
             "optional": false,
             "field": "body",
-            "description": "<p>Response Object[].</p>"
+            "description": "<p>Response Object.</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"Friends fetched\",\n     \"body\": [\n           {\n               userName: \"sami\",\n               name: \"Abdul Sami\",\n               age: \"21\",\n               isInMotion: true\n           },\n           {\n               userName: \"sami\",\n               name: \"Abdul Sami\",\n               age: \"21\",\n               isInMotion: false\n           },\n           {\n               userName: \"sami\",\n               name: \"Abdul Sami\",\n               age: \"21\",\n               isInMotion: true\n           }\n     ]\n}",
+          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"User profile fetched\",\n     \"body\": {\n           userName: \"user\",\n           name: \"User\",\n           age: 21,\n           description: \"Description\",\n           location: \"87.5436,67.53567\",\n           isInMotion: false,\n           locationHistory: [\n               \"87.5436,67.53567\",\n               \"87.5436,67.53567\",\n               \"87.5436,67.53567\"\n           ],\n           locationFriends: [\n               \"USER-24gdgdgh-fdgsds-4343dggd\",\n               \"USER-24gdgdgh-fdgsds-4343dggd\",\n               \"USER-24gdgdgh-fdgsds-4343dggd\",\n           ],\n           motionFriends: [\n               \"USER-24gdgdgh-fdgsds-4343dggd\",\n               \"USER-24gdgdgh-fdgsds-4343dggd\",\n               \"USER-24gdgdgh-fdgsds-4343dggd\",\n           ],\n           receivedRequests: [\n               {\n                   id: \"REQ-gfg-dfgdf3-fdgd3\",\n                   userName: \"USER-24gdgdgh-fdgsds-4343dggd\",\n                   date: 24562345,\n                   typeId: 0\n               },\n               {\n                   id: \"REQ-gfg-dfgdf3-fdgd3\",\n                   userName: \"USER-24gdgdgh-fdgsds-4343dggd\",\n                   date: 24562345,\n                   typeId: 0\n               }\n           ],\n           sentRequests: [\n               {\n                   id: \"REQ-gfg-dfgdf3-fdgd3\",\n                   userName: \"USER-24gdgdgh-fdgsds-4343dggd\",\n                   date: 24562345,\n                   typeId: 0\n               },\n               {\n                   id: \"REQ-gfg-dfgdf3-fdgd3\",\n                   userName: \"USER-24gdgdgh-fdgsds-4343dggd\",\n                   date: 24562345,\n                   typeId: 0\n               }\n           ]\n     }\n}",
           "type": "json"
         }
       ]
@@ -418,9 +703,9 @@ define({ "api": [
   },
   {
     "type": "post",
-    "url": "/searchGlobalUsers",
-    "title": "Search for all users in the database",
-    "name": "searchGlobalUsers",
+    "url": "/removeFriend",
+    "title": "Remove friend",
+    "name": "removeFriend",
     "group": "Client",
     "version": "0.0.1",
     "parameter": {
@@ -435,17 +720,17 @@ define({ "api": [
           },
           {
             "group": "Parameter",
-            "type": "Object",
+            "type": "String",
             "optional": false,
-            "field": "query",
-            "description": "<p>Query for search.</p>"
+            "field": "userName",
+            "description": "<p>Username</p>"
           },
           {
             "group": "Parameter",
-            "type": "Int",
+            "type": "String",
             "optional": false,
-            "field": "criteria",
-            "description": "<p>Criteria for search.</p>"
+            "field": "friendUserName",
+            "description": "<p>Friend Username</p>"
           }
         ]
       }
@@ -466,20 +751,13 @@ define({ "api": [
             "optional": false,
             "field": "message",
             "description": "<p>Response message.</p>"
-          },
-          {
-            "group": "Success 200",
-            "type": "Object[]",
-            "optional": false,
-            "field": "body",
-            "description": "<p>Response Object[].</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"All users fetched\",\n     \"body\": [\n           {\n               userName: \"sami\",\n               name: \"Abdul Sami\",\n               age: \"21\"\n           },\n           {\n               userName: \"sami\",\n               name: \"Abdul Sami\",\n               age: \"21\"\n           },\n           {\n               userName: \"sami\",\n               name: \"Abdul Sami\",\n               age: \"21\"\n           }\n     ]\n}",
+          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"Friend removed\",\n}",
           "type": "json"
         }
       ]
@@ -553,13 +831,20 @@ define({ "api": [
             "optional": false,
             "field": "message",
             "description": "<p>Response message.</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "body",
+            "description": "<p>Response Object.</p>"
           }
         ]
       },
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"Request sent\",\n}",
+          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"Request sent\",\n     \"body\": {\n           id: \"REQ-gdgwqrr-gfhfght-e56fhfh\"\n     }\n}",
           "type": "json"
         }
       ]
@@ -639,7 +924,7 @@ define({ "api": [
       "examples": [
         {
           "title": "Success-Response:",
-          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"User credentials valid\",\n     \"body\": {\n           userName: \"sami\",\n           name: \"Abdul Sami\",\n           age: 21\n     }\n}",
+          "content": "  {\n     \"status\": \"Success\",\n     \"message\": \"User signed in\",\n     \"body\": {\n           userName: \"user\",\n           name: \"User\",\n           age: 21,\n           description: \"Description\",\n           location: \"87.5436,67.53567\",\n           isInMotion: false,\n           locationHistory: [\n               \"87.5436,67.53567\",\n               \"87.5436,67.53567\",\n               \"87.5436,67.53567\"\n           ],\n           locationFriends: [\n               \"USER-24gdgdgh-fdgsds-4343dggd\",\n               \"USER-24gdgdgh-fdgsds-4343dggd\",\n               \"USER-24gdgdgh-fdgsds-4343dggd\",\n           ],\n           motionFriends: [\n               \"USER-24gdgdgh-fdgsds-4343dggd\",\n               \"USER-24gdgdgh-fdgsds-4343dggd\",\n               \"USER-24gdgdgh-fdgsds-4343dggd\",\n           ],\n           receivedRequests: [\n               {\n                   id: \"REQ-gfg-dfgdf3-fdgd3\",\n                   toUser: \"USER-24gdgdgh-fdgsds-4343dggd\",\n                   typeId: 0\n               },\n               {\n                   id: \"REQ-gfg-dfgdf3-fdgd3\",\n                   toUser: \"USER-24gdgdgh-fdgsds-4343dggd\",\n                   typeId: 0\n               }\n           ],\n           sentRequests: [\n               {\n                   id: \"REQ-gfg-dfgdf3-fdgd3\",\n                   toUser: \"USER-24gdgdgh-fdgsds-4343dggd\",\n                   typeId: 0\n               },\n               {\n                   id: \"REQ-gfg-dfgdf3-fdgd3\",\n                   toUser: \"USER-24gdgdgh-fdgsds-4343dggd\",\n                   typeId: 0\n               }\n           ]\n     }\n}",
           "type": "json"
         }
       ]
@@ -833,7 +1118,7 @@ define({ "api": [
   {
     "type": "post",
     "url": "/updateMotionStatus",
-    "title": "Update location of a user",
+    "title": "Update movement status of a user",
     "name": "updateMotionStatus",
     "group": "Client",
     "version": "0.0.1",
@@ -937,79 +1222,6 @@ define({ "api": [
     "group": "D__Expendive_Workspace_NodeJS_SLSHServer_doc_main_js",
     "groupTitle": "D__Expendive_Workspace_NodeJS_SLSHServer_doc_main_js",
     "name": ""
-  },
-  {
-    "type": "post",
-    "url": "/addRequestType",
-    "title": "Add request type in database",
-    "name": "addRequestType",
-    "group": "Superuser",
-    "version": "0.0.1",
-    "parameter": {
-      "fields": {
-        "Parameter": [
-          {
-            "group": "Parameter",
-            "type": "String",
-            "optional": false,
-            "field": "apiKey",
-            "description": "<p>Key for API authentication.</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "Int",
-            "optional": false,
-            "field": "id",
-            "description": "<p>Request type ID.</p>"
-          },
-          {
-            "group": "Parameter",
-            "type": "String",
-            "optional": false,
-            "field": "typeName",
-            "description": "<p>Request type name.</p>"
-          }
-        ]
-      }
-    },
-    "success": {
-      "fields": {
-        "Success 200": [
-          {
-            "group": "Success 200",
-            "type": "String",
-            "optional": false,
-            "field": "status",
-            "description": "<p>Success/Error.</p>"
-          },
-          {
-            "group": "Success 200",
-            "type": "String",
-            "optional": false,
-            "field": "message",
-            "description": "<p>Response message.</p>"
-          }
-        ]
-      },
-      "examples": [
-        {
-          "title": "Success-Response:",
-          "content": "{\n   \"status\": \"Success\",\n   \"message\": \"Type added\"\n }",
-          "type": "json"
-        }
-      ]
-    },
-    "error": {
-      "examples": [
-        {
-          "title": "Error-Response:",
-          "content": "{\n   \"status\": \"Error\",\n   \"message\": \"Invalid API Key\"\n }",
-          "type": "json"
-        }
-      ]
-    },
-    "filename": "D:/Expendive/Workspace/NodeJS/SLSHServer/app.js",
-    "groupTitle": "Superuser"
   },
   {
     "type": "get",
