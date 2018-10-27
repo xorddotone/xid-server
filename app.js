@@ -68,21 +68,12 @@ app.use(cors());
  * Superuser routes
  */
 
-/**
- * @api {get} /connectionTest Test Server Connection.
- * @apiName connectionTest
- * @apiGroup Superuser
- * @apiversion 0.0.1
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- */
 app.get('/connectionTest', function (req, res) {
     res.json({ status: statusSuccess, message: "Server is up and ready" });
 });
 
 /**
- * Client routes
+ * Admin routes
  */
 
 app.post("/requestAccess", function (req, res) {
@@ -129,7 +120,7 @@ app.get('/getRequests', function (req, res) {
     )
 });
 
-app.post("/getData", function (req, res) {
+app.post("/getDataForAdmin", function (req, res) {
     let nic = req.body.nic;
 
     if (!nic) {
@@ -146,7 +137,7 @@ app.post("/getData", function (req, res) {
     res.json(
         {
             status: statusSuccess,
-            message: "Requests fetched",
+            message: "Data fetched",
             body: {
                 nic: data.nic,
                 name: data.name,
@@ -154,7 +145,161 @@ app.post("/getData", function (req, res) {
                 gender: data.gender,
                 country: data.country,
                 dob: data.dob,
-                doe: data.doe,
+                doe: data.doe
+            }
+        }
+    )
+});
+
+/**
+ * User routes
+ */
+
+app.post("/writeData", function (req, res) {
+    let nic = req.body.nic;
+    let name = req.body.name;
+    let fatherName = req.body.fatherName;
+    let gender = req.body.gender;
+    let country = req.body.country;
+    let dob = req.body.dob;
+    let doe = req.body.doe;
+
+    if (!nic || !name || !fatherName || !gender || !country || !dob || !doe) {
+        res.json({ status: statusError, message: "Empty parameters" });
+        return
+    }
+
+    let data = realm.objectForPrimaryKey("Data", nic);
+    if (!data) {
+        res.json({ status: statusError, message: "Invalid NIC" });
+        return
+    }
+
+    try {
+        realm.write(() => {
+            let item = realm.create("Data", {
+                nic: nic,
+                name: name,
+                fatherName: fatherName,
+                gender: gender,
+                country: country,
+                dob: dob,
+                doe: doe
+            }, true);
+            res.json({ status: statusSuccess, message: 'Data written' });
+        })
+    } catch (e) {
+        console.log(e);
+        res.json({ status: statusError, message: 'Write Failed' });
+    }
+});
+
+app.post("/approveRequest", function (req, res) {
+    let nic = req.body.nic;
+    let reqId = req.body.reqId;
+
+    if (!nic || !reqId) {
+        res.json({ status: statusError, message: "Empty parameters" });
+        return
+    }
+
+    let request = realm.objectForPrimaryKey("Requests", reqId);
+    let data = realm.objectForPrimaryKey("Data", nic);
+    if (!request || !data) {
+        res.json({ status: statusError, message: "Invalid parameters" });
+        return
+    }
+
+    try {
+        realm.write(() => {
+            request.status = statusApproved
+            data.access = true
+            res.json({ status: statusSuccess, message: 'Request granted' });
+        })
+    } catch (e) {
+        console.log(e);
+        res.json({ status: statusError, message: 'Write Failed' });
+    }
+});
+
+app.post("/declineRequest", function (req, res) {
+    let nic = req.body.nic;
+    let reqId = req.body.reqId;
+
+    if (!nic || !reqId) {
+        res.json({ status: statusError, message: "Empty parameters" });
+        return
+    }
+
+    let request = realm.objectForPrimaryKey("Requests", reqId);
+    let data = realm.objectForPrimaryKey("Data", nic);
+    if (!request || !data) {
+        res.json({ status: statusError, message: "Invalid parameters" });
+        return
+    }
+
+    try {
+        realm.write(() => {
+            request.status = statusDeclined
+            data.access = false
+            res.json({ status: statusSuccess, message: 'Request granted' });
+        })
+    } catch (e) {
+        console.log(e);
+        res.json({ status: statusError, message: 'Write Failed' });
+    }
+});
+
+app.post("/revokeAccess", function (req, res) {
+    let nic = req.body.nic;
+    let reqId = req.body.reqId;
+
+    if (!nic || !reqId) {
+        res.json({ status: statusError, message: "Empty parameters" });
+        return
+    }
+
+    let request = realm.objectForPrimaryKey("Requests", reqId);
+    let data = realm.objectForPrimaryKey("Data", nic);
+    if (!request || !data) {
+        res.json({ status: statusError, message: "Invalid parameters" });
+        return
+    }
+
+    try {
+        realm.write(() => {
+            request.status = statusRevoked
+            data.access = false
+            res.json({ status: statusSuccess, message: 'Request granted' });
+        })
+    } catch (e) {
+        console.log(e);
+        res.json({ status: statusError, message: 'Write Failed' });
+    }
+});
+
+app.post("/getDataForUser", function (req, res) {
+    let nic = req.body.nic;
+
+    if (!nic) {
+        res.json({ status: statusError, message: "Empty parameters" });
+        return
+    }
+
+    let data = realm.objectForPrimaryKey("Data", nic);
+
+    res.json(
+        {
+            status: statusSuccess,
+            message: "Data fetched",
+            body: {
+                nic: data.nic,
+                name: data.name,
+                fatherName: data.fatherName,
+                gender: data.gender,
+                country: data.country,
+                dob: data.dob,
+                doe: data.doe
             }
         }
     )

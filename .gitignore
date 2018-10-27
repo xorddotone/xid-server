@@ -1,3 +1,6 @@
 /node_modules
 default.realm.lock
 default.realm
+default.realm.note
+/.idea
+/default.realm.management
