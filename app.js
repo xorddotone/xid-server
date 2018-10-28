@@ -93,6 +93,7 @@ app.post("/requestAccess", function (req, res) {
                 nic: nic,
                 status: statusPending
             }, true);
+            res.json({ status: statusError, message: "Request initiated." });
         })
     } catch (e) {
         console.log(e);
@@ -129,6 +130,11 @@ app.post("/getDataForAdmin", function (req, res) {
     }
 
     let data = realm.objectForPrimaryKey("Data", nic);
+
+    if (!data) {
+        res.json({ status: statusError, message: "Empty data" });
+        return
+    }
 
     if (data.access == false) {
         return
