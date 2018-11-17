@@ -197,31 +197,14 @@ app.post("/writeData", function (req, res) {
     }
 });
 
-app.post("/approveRequest", function (req, res) {
-    let nic = req.body.nic;
-    let reqId = req.body.reqId;
-
-    if (!nic || !reqId) {
-        res.json({ status: statusError, message: "Empty parameters" });
-        return
-    }
-
-    let request = realm.objectForPrimaryKey("Requests", reqId);
-    let data = realm.objectForPrimaryKey("Data", nic);
-    if (!request || !data) {
-        res.json({ status: statusError, message: "Invalid parameters" });
-        return
-    }
-
+app.post("/approveRequest", async function (req, res) {
     try {
-        realm.write(() => {
-            request.status = statusApproved
-            data.access = true
-            res.json({ status: statusSuccess, message: 'Request granted' });
-        })
+        await axios.post("http://192.168.20.72:3000/api/acceptRequest", {
+            requestId : req.body.requestId
+        });
+        res.json({ status: statusSuccess, message: 'Request granted' });
     } catch (e) {
-        console.log(e);
-        res.json({ status: statusError, message: 'Write Failed' });
+
     }
 });
 
