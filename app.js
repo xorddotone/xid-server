@@ -33,6 +33,7 @@ const express = require('express');
 const http = require('http');
 const logger = require('logger');
 const Realm = require("realm");
+const axios = require("axios");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
@@ -78,6 +79,7 @@ app.get('/connectionTest', function (req, res) {
 
 app.post("/requestAccess", function (req, res) {
     let nic = req.body.nic;
+    console.log(req.body)
 
     if (!nic) {
         res.json({ status: statusError, message: "Empty parameters" });
@@ -101,22 +103,22 @@ app.post("/requestAccess", function (req, res) {
     }
 });
 
-app.get('/getRequests', function (req, res) {
-    let requests = realm.objects("Requests");
+app.get('/getRequests', async function (req, res) {
+    let request = await axios.get("http://192.168.20.72:3000/api/Request");
+    let requests = request.data
+    
 
     res.json(
         {
             status: statusSuccess,
             message: "Requests fetched",
-            body: {
-                requests: requests.map(function (item) {
-                    return {
-                        id: item.id,
-                        nic: item.nic,
-                        status: item.status
-                    }
-                })
-            }
+            body: requests.map(function (item) {
+                return {
+                    id: item.requestId,
+                    nic: item.cnicNumber,
+                    status: item.status
+                }
+            })
         }
     )
 });
@@ -130,11 +132,6 @@ app.post("/getDataForAdmin", function (req, res) {
     }
 
     let data = realm.objectForPrimaryKey("Data", nic);
-
-    if (!data) {
-        res.json({ status: statusError, message: "Empty data" });
-        return
-    }
 
     if (data.access == false) {
         return
