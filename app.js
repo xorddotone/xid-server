@@ -166,7 +166,7 @@ app.post("/getDataForAdmin", function (req, res) {
  * User routes
  */
 
-app.post("/writeData", function (req, res) {
+app.post("/writeData", async function (req, res) {
     let nic = req.body.nic;
     let name = req.body.name;
     let fatherName = req.body.fatherName;
@@ -174,31 +174,68 @@ app.post("/writeData", function (req, res) {
     let country = req.body.country;
     let dob = req.body.dob;
     let doe = req.body.doe;
+    let doi = req.body.doi;
+
+
 
     if (!nic || !name || !fatherName || !gender || !country || !dob || !doe) {
         res.json({ status: statusError, message: "Empty parameters" });
         return
     }
 
-    let data = realm.objectForPrimaryKey("Data", nic);
-    if (!data) {
-        res.json({ status: statusError, message: "Invalid NIC" });
-        return
+    try {
+        await axios.post("http://192.168.20.72:3000/api/Person", {
+                        idNumber: nic,
+                        fullName: name,
+                        fatherName: fatherName,
+                        gender: gender,
+                        country: country,
+                        dob: dob,
+                        doe: doe,
+                        doi : doi
+        });
+
+        res.json({status: statusSuccess, message: 'Successfully Created'});
+
+    }catch (e) {
+        console.log(e);
+        res.json({ status: statusError, message: 'Write Failed' });
     }
 
+    // let data = realm.objectForPrimaryKey("Data", nic);
+    // if (!data) {
+    //     res.json({ status: statusError, message: "Invalid NIC" });
+    //     return
+    // }
+    //
+    // try {
+    //     realm.write(() => {
+    //         let item = realm.create("Data", {
+    //             nic: nic,
+    //             name: name,
+    //             fatherName: fatherName,
+    //             gender: gender,
+    //             country: country,
+    //             dob: dob,
+    //             doe: doe
+    //         }, true);
+    //         res.json({ status: statusSuccess, message: 'Data written' });
+    //     })
+    // } catch (e) {
+    //     console.log(e);
+    //     res.json({ status: statusError, message: 'Write Failed' });
+    // }
+});
+
+
+
+app.post("/writePerson", async function (req, res) {
     try {
-        realm.write(() => {
-            let item = realm.create("Data", {
-                nic: nic,
-                name: name,
-                fatherName: fatherName,
-                gender: gender,
-                country: country,
-                dob: dob,
-                doe: doe
-            }, true);
-            res.json({ status: statusSuccess, message: 'Data written' });
-        })
+        await axios.post("http://192.168.20.72:3000/api/Person", {
+            cnicNumber: req.body.cnic,
+            phoneNumber: req.body.phoneNumber
+        });
+        res.json({status: statusSuccess, message: 'Successfully Created'});
     } catch (e) {
         console.log(e);
         res.json({ status: statusError, message: 'Write Failed' });
