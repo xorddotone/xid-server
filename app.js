@@ -103,20 +103,28 @@ app.post("/requestAccess", function (req, res) {
     }
 });
 
-app.get('/getRequests', async function (req, res) {
+app.post('/getRequests', async function (req, res) {
     let request = await axios.get("http://192.168.20.72:3000/api/Request");
-    let requests = request.data
-    
+    let finalData = []
+
+    for (let i = 0 ; i<request.data.length ; i++){
+        if(request.data[i].status === "PENDING"){
+            finalData.push(request.data[i])
+        }
+    }
 
     res.json(
         {
             status: statusSuccess,
             message: "Requests fetched",
-            body: requests.map(function (item) {
+            body: finalData.map(function (item) {
                 return {
                     id: item.requestId,
                     nic: item.cnicNumber,
-                    status: item.status
+                    status: item.status,
+                    requestingAuthority : "Telenor Micro-Finance",
+                    requestingReason : "Account Opening",
+                    requestingFields : "Name , Father Name , Date of Birth"
                 }
             })
         }
@@ -197,32 +205,41 @@ app.post("/writeData", function (req, res) {
     }
 });
 
-app.post("/approveRequest", function (req, res) {
-    let nic = req.body.nic;
-    let reqId = req.body.reqId;
-
-    if (!nic || !reqId) {
-        res.json({ status: statusError, message: "Empty parameters" });
-        return
-    }
-
-    let request = realm.objectForPrimaryKey("Requests", reqId);
-    let data = realm.objectForPrimaryKey("Data", nic);
-    if (!request || !data) {
-        res.json({ status: statusError, message: "Invalid parameters" });
-        return
-    }
-
+app.post("/approveRequest", async function (req, res) {
     try {
-        realm.write(() => {
-            request.status = statusApproved
-            data.access = true
-            res.json({ status: statusSuccess, message: 'Request granted' });
-        })
+        await axios.post("http://192.168.20.72:3000/api/acceptRequest", {
+            requestId : req.body.requestId
+        });
+        res.json({ status: statusSuccess, message: 'Request granted' });
     } catch (e) {
-        console.log(e);
-        res.json({ status: statusError, message: 'Write Failed' });
+
     }
+
+    // let nic = req.body.nic;
+    // let reqId = req.body.reqId;
+
+    // if (!nic || !reqId) {
+    //     res.json({ status: statusError, message: "Empty parameters" });
+    //     return
+    // }
+
+    // let request = realm.objectForPrimaryKey("Requests", reqId);
+    // let data = realm.objectForPrimaryKey("Data", nic);
+    // if (!request || !data) {
+    //     res.json({ status: statusError, message: "Invalid parameters" });
+    //     return
+    // }
+
+    // try {
+    //     realm.write(() => {
+    //         request.status = statusApproved
+    //         data.access = true
+    //         res.json({ status: statusSuccess, message: 'Request granted' });
+    //     })
+    // } catch (e) {
+    //     console.log(e);
+    //     res.json({ status: statusError, message: 'Write Failed' });
+    // }
 });
 
 app.post("/declineRequest", function (req, res) {
