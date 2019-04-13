@@ -104,7 +104,7 @@ app.post("/requestAccess", function (req, res) {
 });
 
 app.post('/getRequests', async function (req, res) {
-    let request = await axios.get("http://192.168.20.72:3000/api/Request");
+    let request = await axios.get("http://35.196.79.113:3000/api/Request");
     let finalData = []
 
     for (let i = 0 ; i<request.data.length ; i++){
@@ -184,7 +184,7 @@ app.post("/writeData", async function (req, res) {
     }
 
     try {
-        await axios.post("http://192.168.20.72:3000/api/Person", {
+        await axios.post("http://35.196.79.113:3000/api/Person", {
                         idNumber: nic,
                         fullName: name,
                         fatherName: fatherName,
@@ -231,7 +231,7 @@ app.post("/writeData", async function (req, res) {
 
 app.post("/writePerson", async function (req, res) {
     try {
-        await axios.post("http://192.168.20.72:3000/api/Person", {
+        await axios.post("http://35.196.79.113:3000/api/Person", {
             cnicNumber: req.body.cnic,
             phoneNumber: req.body.phoneNumber
         });
@@ -244,7 +244,7 @@ app.post("/writePerson", async function (req, res) {
 
 app.post("/approveRequest", async function (req, res) {
     try {
-        await axios.post("http://192.168.20.72:3000/api/acceptRequest", {
+        await axios.post("http://35.196.79.113:3000/api/acceptRequest", {
             requestId : req.body.requestId
         });
         res.json({ status: statusSuccess, message: 'Request granted' });
