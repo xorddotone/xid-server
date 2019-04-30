@@ -105,7 +105,7 @@ app.post("/requestAccess", function (req, res) {
 });
 
 app.post('/getRequests', async function (req, res) {
-    let request = await axios.get("Request");
+    let request = await axios.get(hyperledgerAddress+"Request");
     let finalData = []
 
     for (let i = 0 ; i<request.data.length ; i++){
