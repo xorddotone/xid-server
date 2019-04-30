@@ -52,6 +52,7 @@ const statusPending = "Pending"
 const statusApproved = "Approved"
 const statusRevoked = "Revoked"
 const statusDeclined = "Declined"
+const hyperledgerAddress = "http://35.244.29.37:3000/api/";
 
 /**
  * Init realm
@@ -104,7 +105,7 @@ app.post("/requestAccess", function (req, res) {
 });
 
 app.post('/getRequests', async function (req, res) {
-    let request = await axios.get("http://35.196.79.113:3000/api/Request");
+    let request = await axios.get("Request");
     let finalData = []
 
     for (let i = 0 ; i<request.data.length ; i++){
@@ -184,7 +185,7 @@ app.post("/writeData", async function (req, res) {
     }
 
     try {
-        await axios.post("http://35.196.79.113:3000/api/Person", {
+        await axios.post(hyperledgerAddress+"Person", {
                         idNumber: nic,
                         fullName: name,
                         fatherName: fatherName,
@@ -231,7 +232,7 @@ app.post("/writeData", async function (req, res) {
 
 app.post("/writePerson", async function (req, res) {
     try {
-        await axios.post("http://35.196.79.113:3000/api/Person", {
+        await axios.post(hyperledgerAddress+"Person", {
             cnicNumber: req.body.cnic,
             phoneNumber: req.body.phoneNumber
         });
@@ -244,7 +245,7 @@ app.post("/writePerson", async function (req, res) {
 
 app.post("/approveRequest", async function (req, res) {
     try {
-        await axios.post("http://35.196.79.113:3000/api/acceptRequest", {
+        await axios.post(hyperledgerAddress+"acceptRequest", {
             requestId : req.body.requestId
         });
         res.json({ status: statusSuccess, message: 'Request granted' });
