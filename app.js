@@ -52,7 +52,7 @@ const statusPending = "Pending"
 const statusApproved = "Approved"
 const statusRevoked = "Revoked"
 const statusDeclined = "Declined"
-const hyperledgerAddress = "http://35.244.29.37:3000/api/";
+const hyperledgerAddress = "http://34.67.194.218:3000/api/";
 
 /**
  * Init realm
